@@ -1,0 +1,326 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1791872743.8505526,
+    "seen": 1792151796.744326,
+    "ast_hash": "ba5ee43acbdb4f7ca504555cf211c0f7",
+    "semantic_hash": "ba5ee43acbdb4f7ca504555cf211c0f7"
+  },
+  ".oxlintrc.json": {
+    "mtime": 1791811369.823837,
+    "seen": 1792151796.744326,
+    "ast_hash": "5e6e3cea3e89137071c142dd7835b0ef",
+    "semantic_hash": "5e6e3cea3e89137071c142dd7835b0ef"
+  },
+  "package.json": {
+    "mtime": 1792051731.4113812,
+    "seen": 1792151796.744326,
+    "ast_hash": "b257aa563dc02d21e445009b4717371f",
+    "semantic_hash": "b257aa563dc02d21e445009b4717371f"
+  },
+  "scripts/news.mjs": {
+    "mtime": 1792053714.8910046,
+    "seen": 1792151796.744326,
+    "ast_hash": "ce37ee2a514869b0deb8d84ac5ac765f",
+    "semantic_hash": "ce37ee2a514869b0deb8d84ac5ac765f"
+  },
+  "scripts/prerender.mjs": {
+    "mtime": 1792052257.8667753,
+    "seen": 1792151796.744326,
+    "ast_hash": "a933f12a4330daba347234288e749fce",
+    "semantic_hash": "a933f12a4330daba347234288e749fce"
+  },
+  "scripts/site-files.mjs": {
+    "mtime": 1792144120.1331847,
+    "seen": 1792151796.744326,
+    "ast_hash": "7fc01837875c9cf34bfe6577631577bf",
+    "semantic_hash": "7fc01837875c9cf34bfe6577631577bf"
+  },
+  "src/App.jsx": {
+    "mtime": 1792144402.516961,
+    "seen": 1792151796.744326,
+    "ast_hash": "58c6574fa43fd179ecb8ba8a3d447b00",
+    "semantic_hash": "58c6574fa43fd179ecb8ba8a3d447b00"
+  },
+  "src/components/AnimatedLogo.jsx": {
+    "mtime": 1792144286.1257577,
+    "seen": 1792151796.744326,
+    "ast_hash": "565e4234cab2e81a2b8bb7f727c34042",
+    "semantic_hash": "565e4234cab2e81a2b8bb7f727c34042"
+  },
+  "src/components/Assistant.jsx": {
+    "mtime": 1792144402.278519,
+    "seen": 1792151796.744326,
+    "ast_hash": "5ee34a3edc11e2a277b37a8ee6fced90",
+    "semantic_hash": "5ee34a3edc11e2a277b37a8ee6fced90"
+  },
+  "src/components/ContactBox.jsx": {
+    "mtime": 1792129936.5298846,
+    "seen": 1792151796.744326,
+    "ast_hash": "1b9a123a3527ddd9d91ff71e4d65595f",
+    "semantic_hash": "1b9a123a3527ddd9d91ff71e4d65595f"
+  },
+  "src/components/ContactForm.jsx": {
+    "mtime": 1792142137.5351496,
+    "seen": 1792151796.744326,
+    "ast_hash": "724a2ab5c895d931b63fc730681782b5",
+    "semantic_hash": "724a2ab5c895d931b63fc730681782b5"
+  },
+  "src/components/CookieBanner.jsx": {
+    "mtime": 1792127708.6896164,
+    "seen": 1792151796.744326,
+    "ast_hash": "479fecc19be80c0c3b3bc03e2d209bc7",
+    "semantic_hash": "479fecc19be80c0c3b3bc03e2d209bc7"
+  },
+  "src/components/HubSpotMeeting.jsx": {
+    "mtime": 1792141347.068045,
+    "seen": 1792151796.744326,
+    "ast_hash": "e281e7fba671e7f31c784ef1e579942e",
+    "semantic_hash": "e281e7fba671e7f31c784ef1e579942e"
+  },
+  "src/components/ProfileStudioCard.jsx": {
+    "mtime": 1792128443.736748,
+    "seen": 1792151796.744326,
+    "ast_hash": "ab44876722a220a819af1b4f4cba4936",
+    "semantic_hash": "ab44876722a220a819af1b4f4cba4936"
+  },
+  "src/components/RegionMap.jsx": {
+    "mtime": 1792067537.0083013,
+    "seen": 1792151796.744326,
+    "ast_hash": "be1c6e50e714d4b86a1a810943c6eaed",
+    "semantic_hash": "be1c6e50e714d4b86a1a810943c6eaed"
+  },
+  "src/components/Scene3D.jsx": {
+    "mtime": 1792050608.7690537,
+    "seen": 1792151796.744326,
+    "ast_hash": "1a0c631baf733116f46572bfc8e99766",
+    "semantic_hash": "1a0c631baf733116f46572bfc8e99766"
+  },
+  "src/components/Scene3DCanvas.jsx": {
+    "mtime": 1791872846.6172628,
+    "seen": 1792151796.744326,
+    "ast_hash": "ba875f6dbc147d200ff4224dfffc525d",
+    "semantic_hash": "ba875f6dbc147d200ff4224dfffc525d"
+  },
+  "src/components/SplitText.jsx": {
+    "mtime": 1791811598.0946903,
+    "seen": 1792151796.744326,
+    "ast_hash": "b79a9bbf4a7dcef7df5fb9003d7f1b4f",
+    "semantic_hash": "b79a9bbf4a7dcef7df5fb9003d7f1b4f"
+  },
+  "src/components/SpotlightCard.jsx": {
+    "mtime": 1791811598.578365,
+    "seen": 1792151796.744326,
+    "ast_hash": "1fd536b8d10ce3f2ef957e1da575a79f",
+    "semantic_hash": "1fd536b8d10ce3f2ef957e1da575a79f"
+  },
+  "src/components/SupportButton.jsx": {
+    "mtime": 1792144298.8661287,
+    "seen": 1792151796.744326,
+    "ast_hash": "a4348f951eeebdfb16ff36f66be9fe91",
+    "semantic_hash": "a4348f951eeebdfb16ff36f66be9fe91"
+  },
+  "src/components/Wayfinding.jsx": {
+    "mtime": 1792142873.8539436,
+    "seen": 1792151796.744326,
+    "ast_hash": "dca6b1a5abc671194a6d93815d942041",
+    "semantic_hash": "dca6b1a5abc671194a6d93815d942041"
+  },
+  "src/components/logoPaths.js": {
+    "mtime": 1792144286.1166708,
+    "seen": 1792151796.744326,
+    "ast_hash": "0e2fc0136cddf28f3c815f1c044613f7",
+    "semantic_hash": "0e2fc0136cddf28f3c815f1c044613f7"
+  },
+  "src/data/germany.js": {
+    "mtime": 1792065687.2959054,
+    "seen": 1792151796.744326,
+    "ast_hash": "e5c63ec20b6f30b6fec66fb8651c24cb",
+    "semantic_hash": "e5c63ec20b6f30b6fec66fb8651c24cb"
+  },
+  "src/data/news.js": {
+    "mtime": 1792053714.8726947,
+    "seen": 1792151796.744326,
+    "ast_hash": "99bc8f72151c659f770da949b7bb0448",
+    "semantic_hash": "99bc8f72151c659f770da949b7bb0448"
+  },
+  "src/data/pages.json": {
+    "mtime": 1792050571.7182276,
+    "seen": 1792151796.744326,
+    "ast_hash": "5745bc45eb254273b8ae0ec5347f0384",
+    "semantic_hash": "5745bc45eb254273b8ae0ec5347f0384"
+  },
+  "src/data/site.js": {
+    "mtime": 1792129936.5223749,
+    "seen": 1792151796.744326,
+    "ast_hash": "89e6b6d826f214dd1978dd754eb193f5",
+    "semantic_hash": "89e6b6d826f214dd1978dd754eb193f5"
+  },
+  "src/lib/cms.js": {
+    "mtime": 1792053714.8671117,
+    "seen": 1792151796.744326,
+    "ast_hash": "3239f130cc9a7463071adf51914d45cc",
+    "semantic_hash": "3239f130cc9a7463071adf51914d45cc"
+  },
+  "src/lib/consent.js": {
+    "mtime": 1792127345.3486495,
+    "seen": 1792151796.744326,
+    "ast_hash": "a7fa1de96a12002a03be693799b6b973",
+    "semantic_hash": "a7fa1de96a12002a03be693799b6b973"
+  },
+  "src/lib/markdown.js": {
+    "mtime": 1792051749.1423306,
+    "seen": 1792151796.744326,
+    "ast_hash": "49db355678a68b355c048701bceb7eb4",
+    "semantic_hash": "49db355678a68b355c048701bceb7eb4"
+  },
+  "src/lib/prefs.js": {
+    "mtime": 1792065442.5871344,
+    "seen": 1792151796.744326,
+    "ast_hash": "1d77e07659a663f8df9ec33c1d1672fc",
+    "semantic_hash": "1d77e07659a663f8df9ec33c1d1672fc"
+  },
+  "src/main.jsx": {
+    "mtime": 1792050608.2712245,
+    "seen": 1792151796.744326,
+    "ast_hash": "e31b6e9e12317ae2f2d28132f90b58a6",
+    "semantic_hash": "e31b6e9e12317ae2f2d28132f90b58a6"
+  },
+  "src/pages/About.jsx": {
+    "mtime": 1792130589.8624032,
+    "seen": 1792151796.744326,
+    "ast_hash": "de358db32ef0763909c8e846b9961c44",
+    "semantic_hash": "de358db32ef0763909c8e846b9961c44"
+  },
+  "src/pages/BaramundiCalc.jsx": {
+    "mtime": 1792127654.3660474,
+    "seen": 1792151796.744326,
+    "ast_hash": "5386d1c63b2c7a144574468f5d3c956e",
+    "semantic_hash": "5386d1c63b2c7a144574468f5d3c956e"
+  },
+  "src/pages/BaramundiPage.jsx": {
+    "mtime": 1792128132.8396568,
+    "seen": 1792151796.744326,
+    "ast_hash": "6cf39fbc53a54175cf3d73d6a09d5fdf",
+    "semantic_hash": "6cf39fbc53a54175cf3d73d6a09d5fdf"
+  },
+  "src/pages/HomeSections.jsx": {
+    "mtime": 1792143670.9548054,
+    "seen": 1792151796.744326,
+    "ast_hash": "c29278421ebb6a846c1d4ce8f6e34adf",
+    "semantic_hash": "c29278421ebb6a846c1d4ce8f6e34adf"
+  },
+  "src/pages/Listing.jsx": {
+    "mtime": 1792058162.1245089,
+    "seen": 1792151796.744326,
+    "ast_hash": "05f8d2eb1780acea8e4f3337ff7e6304",
+    "semantic_hash": "05f8d2eb1780acea8e4f3337ff7e6304"
+  },
+  "src/pages/News.jsx": {
+    "mtime": 1792053714.878856,
+    "seen": 1792151796.744326,
+    "ast_hash": "32fb3a3fa877f2e49668f610c9ab1ab3",
+    "semantic_hash": "32fb3a3fa877f2e49668f610c9ab1ab3"
+  },
+  "src/pages/Page.jsx": {
+    "mtime": 1792143800.6672647,
+    "seen": 1792151796.744326,
+    "ast_hash": "8d0c941b519db5ad7ce1afcb6c574dea",
+    "semantic_hash": "8d0c941b519db5ad7ce1afcb6c574dea"
+  },
+  "src/pages/PhishLab.jsx": {
+    "mtime": 1792126701.9014158,
+    "seen": 1792151796.744326,
+    "ast_hash": "acc7f9c90473abf277e6a5cf1a5be236",
+    "semantic_hash": "acc7f9c90473abf277e6a5cf1a5be236"
+  },
+  "src/pages/ProfileStudioPage.jsx": {
+    "mtime": 1792128334.340352,
+    "seen": 1792151796.744326,
+    "ast_hash": "0ef5939f11a6db91ef17d317bdbf84e8",
+    "semantic_hash": "0ef5939f11a6db91ef17d317bdbf84e8"
+  },
+  "src/pages/Redaktion.jsx": {
+    "mtime": 1792053714.8854518,
+    "seen": 1792151796.744326,
+    "ast_hash": "95b6ee58a057908a98a6cf3ef25a7a4d",
+    "semantic_hash": "95b6ee58a057908a98a6cf3ef25a7a4d"
+  },
+  "src/pages/Tools.jsx": {
+    "mtime": 1792067891.9165447,
+    "seen": 1792151796.744326,
+    "ast_hash": "aee0f64a11cc705e6e596d18ecd4b99a",
+    "semantic_hash": "aee0f64a11cc705e6e596d18ecd4b99a"
+  },
+  "supabase/cron.sql": {
+    "mtime": 1792052206.1954882,
+    "seen": 1792151796.744326,
+    "ast_hash": "d1b39a762e6b387c6afffd285cd9e597",
+    "semantic_hash": "d1b39a762e6b387c6afffd285cd9e597"
+  },
+  "supabase/functions/contact/index.ts": {
+    "mtime": 1792142087.6144779,
+    "seen": 1792151796.744326,
+    "ast_hash": "dce5d1087c578f5df027b01c3a813c7f",
+    "semantic_hash": "dce5d1087c578f5df027b01c3a813c7f"
+  },
+  "supabase/functions/fetch-news/index.ts": {
+    "mtime": 1792053625.9229033,
+    "seen": 1792151796.744326,
+    "ast_hash": "ef2f15423524c3d9f0395d6e00317e91",
+    "semantic_hash": "ef2f15423524c3d9f0395d6e00317e91"
+  },
+  "supabase/functions/google-reviews/index.ts": {
+    "mtime": 1792063454.45831,
+    "seen": 1792151796.744326,
+    "ast_hash": "de7d42a44de2b488282860d286529eb6",
+    "semantic_hash": "de7d42a44de2b488282860d286529eb6"
+  },
+  "supabase/schema.sql": {
+    "mtime": 1792051892.6120236,
+    "seen": 1792151796.744326,
+    "ast_hash": "6181e936decadfdaaabdf40b675ba8cc",
+    "semantic_hash": "6181e936decadfdaaabdf40b675ba8cc"
+  },
+  "vite.config.js": {
+    "mtime": 1791811369.8608754,
+    "seen": 1792151796.744326,
+    "ast_hash": "5d54447744c19ccd28638a5c668d15ea",
+    "semantic_hash": "5d54447744c19ccd28638a5c668d15ea"
+  },
+  "GO-LIVE.md": {
+    "mtime": 1792142262.6809745,
+    "seen": 1792151796.744326,
+    "ast_hash": "4365f3135f39580a995275d935106096",
+    "semantic_hash": "4365f3135f39580a995275d935106096"
+  },
+  "README.md": {
+    "mtime": 1791811369.8203034,
+    "seen": 1792151796.744326,
+    "ast_hash": "75eb386f17caf77fd6fe3ce1d90968ee",
+    "semantic_hash": "75eb386f17caf77fd6fe3ce1d90968ee"
+  },
+  "index.html": {
+    "mtime": 1792050640.5044909,
+    "seen": 1792151796.744326,
+    "ast_hash": "38460a54441e896554d4d98b5425f626",
+    "semantic_hash": "38460a54441e896554d4d98b5425f626"
+  },
+  "public/robots.txt": {
+    "mtime": 1792147989.1470523,
+    "seen": 1792151796.744326,
+    "ast_hash": "5cb918422a8583d67c6addb61ca5c0ab",
+    "semantic_hash": "5cb918422a8583d67c6addb61ca5c0ab"
+  },
+  "src/content/news/2026-10-15-beispiel-gefaelschte-rechnungen.md": {
+    "mtime": 1792050942.3854783,
+    "seen": 1792151796.744326,
+    "ast_hash": "e9ae53f6d1c630e1a532b44138abf287",
+    "semantic_hash": "e9ae53f6d1c630e1a532b44138abf287"
+  },
+  "src/content/news/_VORLAGE.md": {
+    "mtime": 1792050942.31379,
+    "seen": 1792151796.744326,
+    "ast_hash": "bee3753c229f48bac524c515e9b49199",
+    "semantic_hash": "bee3753c229f48bac524c515e9b49199"
+  }
+}

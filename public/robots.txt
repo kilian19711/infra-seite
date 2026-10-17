@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /redaktion
+Sitemap: https://infrastructure-systemhaus.de/sitemap.xml

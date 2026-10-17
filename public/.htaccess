@@ -1,0 +1,6 @@
+# Single-page app on Apache: serve index.html for every route that is not a real file.
+# Old WordPress URLs (/infrastructure-it-systemhaus-2/...) are mapped client-side to the new routes.
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
