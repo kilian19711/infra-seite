@@ -80,6 +80,29 @@
   .alert i { flex: none; width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; }
   .alert--warn { background: rgba(240,180,41,.08); border-color: rgba(240,180,41,.35); } .alert--warn i { background: var(--warn); }
   .alert--crit { background: rgba(255,107,94,.09); border-color: rgba(255,107,94,.45); } .alert--crit i { background: var(--err); box-shadow: 0 0 0 4px rgba(255,107,94,.18); }
+  .spark { width: 100%; height: 70px; display: block; }
+  .spark path.area { fill: rgba(43,183,230,.14); } .spark path.line { fill: none; stroke: var(--accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .spark line { stroke: rgba(240,180,41,.5); stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+  .events li { justify-content: flex-start; align-items: baseline; }
+  .events time { color: var(--muted); font-size: .82rem; min-width: 104px; font-variant-numeric: tabular-nums; }
+  .lvl { display: inline-block; min-width: 64px; padding: 1px 8px; border-radius: 99px; font-size: .72rem; font-weight: 600; text-align: center; text-transform: uppercase; letter-spacing: .04em; }
+  .lvl--info { background: rgba(43,183,230,.14); color: var(--accent); }
+  .lvl--warn { background: rgba(240,180,41,.15); color: var(--warn); }
+  .lvl--error { background: rgba(255,107,94,.16); color: var(--err); }
+  .logbox { padding: 0; overflow: hidden; }
+  .logbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .logbar select, .logbar input[type=search] { height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: .9rem; }
+  .logbar input[type=search] { flex: 1; min-width: 160px; }
+  .chk { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .9rem; }
+  .btn--ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn--sm { height: 36px; padding: 0 14px; font-size: .88rem; }
+  .logtable { max-height: 460px; overflow: auto; }
+  .logtable table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  .logtable th { position: sticky; top: 0; background: var(--card); text-align: left; font-weight: 600; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  .logtable td { padding: 8px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .logtable td:first-child { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .logtable td:last-child { word-break: break-word; }
+  .logtable small { color: var(--muted); }
   .doc { margin-top: 40px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); }
   .doc summary { cursor: pointer; list-style: none; padding: 18px 22px; font-weight: 600; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
   .doc summary::-webkit-details-marker { display: none; }
@@ -153,6 +176,31 @@
     <div class="card card--6"><p class="label">Veröffentlichungen</p><ul class="list" id="deploys"></ul></div>
     <div class="card card--6"><p class="label">Neustarts</p><ul class="list" id="restarts"></ul></div>
   </div>
+  <h2>Monitoring</h2>
+  <p class="sub">Wird jede Minute gemessen und 24 Stunden aufbewahrt · Warnungen werden protokolliert</p>
+  <div class="grid">
+    <div class="card card--4"><p class="label">CPU · 24 h</p><svg class="spark" id="spCpu" viewBox="0 0 300 70" preserveAspectRatio="none"></svg><div class="hint" id="spCpuT">–</div></div>
+    <div class="card card--4"><p class="label">Arbeitsspeicher · 24 h</p><svg class="spark" id="spMem" viewBox="0 0 300 70" preserveAspectRatio="none"></svg><div class="hint" id="spMemT">–</div></div>
+    <div class="card card--4"><p class="label">Festplatte · 24 h</p><svg class="spark" id="spDisk" viewBox="0 0 300 70" preserveAspectRatio="none"></svg><div class="hint" id="spDiskT">–</div></div>
+    <div class="card card--8"><p class="label">Ereignisse</p><ul class="list events" id="events"></ul></div>
+    <div class="card card--4"><p class="label">Schutz vor vollem Speicher</p><dl id="guard"></dl></div>
+  </div>
+
+  <h2>Protokoll</h2>
+  <p class="sub">Alle Ereignisse und Zugriffe – eine Datei pro Tag</p>
+  <div class="card card--12 logbox">
+    <div class="logbar">
+      <select id="lgFile" aria-label="Datei"></select>
+      <select id="lgLevel" aria-label="Stufe">
+        <option value="">Alle Stufen</option><option value="error">Fehler</option><option value="warn">Warnungen</option><option value="info">Info</option>
+      </select>
+      <input id="lgQ" type="search" placeholder="Suchen …" aria-label="Suchen">
+      <label class="chk"><input type="checkbox" id="lgLive" checked> Live</label>
+      <a class="btn btn--ghost btn--sm" id="lgDl" href="#">Herunterladen</a>
+    </div>
+    <div class="logtable"><table><thead><tr><th>Zeit</th><th>Stufe</th><th>Meldung</th></tr></thead><tbody id="lgRows"></tbody></table></div>
+  </div>
+
   <details class="doc">
     <summary>Dokumentation – so funktioniert das Programm</summary>
     <div class="doc__body">
@@ -178,6 +226,16 @@
         <li><b>Übersicht</b> (aktualisiert alle 10 Sekunden): Besucher und Seitenaufrufe heute und der letzten 14 Tage, meistbesuchte Seiten, Anfragen, ausgelieferte Datenmenge, Antwort-Codes, CPU, Arbeitsspeicher, Festplatte, Laufzeit, Server- und Systemdaten, letzte Veröffentlichungen und Neustarts.</li>
       </ul>
 
+      <h3>Protokoll &amp; Monitoring</h3>
+      <ul>
+        <li><b>Ereignis-Protokoll</b> (<code>logs\JJJJ-MM-TT.log</code>): Start und Ende des Servers, Veröffentlichungen, falsche Passwörter, Warnungen zu Speicher/CPU, Fehler und Abstürze mit Details.</li>
+        <li><b>Zugriffs-Protokoll</b> (<code>logs\access-JJJJ-MM-TT.log</code>): jeder Aufruf mit Zeit, IP, Seite, Status, Größe und Antwortzeit.</li>
+        <li><b>Absturz-Protokoll</b> (<code>logs\crash.log</code>): Fehler, die schon beim Start auftreten (z. B. defekte <code>config.json</code>).</li>
+        <li>Im Bereich <b>Protokoll</b> lassen sich alle Dateien ansehen, nach Stufe filtern, durchsuchen und herunterladen; „Live“ aktualisiert alle 10 Sekunden.</li>
+        <li><b>Monitoring:</b> CPU, Arbeitsspeicher und Festplatte werden jede Minute gemessen und 24 Stunden als Verlauf angezeigt. Überschreitet ein Wert die Grenze (Festplatte 85/95 %, RAM 90/97 %, CPU 90 % über 5 Minuten), wird ein Ereignis protokolliert – und wieder, wenn er normal ist.</li>
+        <li><b>Schutz vor vollem Speicher:</b> Protokolle älter als 30 Tage werden gelöscht, der Ordner <code>logs</code> wird auf 200 MB begrenzt (stündlich, bei knappem Speicher sofort). Liegengebliebene Upload-Reste werden entfernt. Unter 1 GB freiem Speicher werden Uploads abgelehnt, damit die VM nicht vollläuft. Werte anpassbar in <code>config.json</code>: <code>logDays</code>, <code>logMaxMB</code>, <code>minFreeMB</code>.</li>
+      </ul>
+
       <h3>Statistiken &amp; Datenschutz</h3>
       <p>Besucher werden gezählt über einen anonymen Tageswert aus IP-Adresse und Browser – IP-Adressen selbst werden <b>nicht</b> gespeichert. Mehrere Kollegen mit derselben Firmen-IP und demselben Browser zählen als ein Besucher. Die Zahlen werden jede Minute in <code>stats.json</code> gesichert und 90 Tage aufbewahrt; sie überstehen den nächtlichen Neustart.</p>
 
@@ -199,7 +257,7 @@
         <tr><td><code>site\</code></td><td>die aktuell veröffentlichte Website</td></tr>
         <tr><td><code>upload\</code></td><td>überwachter Upload-Ordner (Standard)</td></tr>
         <tr><td><code>stats.json</code></td><td>Statistiken, Veröffentlichungen, Neustarts</td></tr>
-        <tr><td><code>logs\server.log</code></td><td>Protokoll</td></tr>
+        <tr><td><code>logs\</code></td><td>Ereignis-, Zugriffs- und Absturz-Protokolle (eine Datei pro Tag)</td></tr>
       </table>
 
       <h3>Einrichtung &amp; Änderungen</h3>
@@ -217,7 +275,7 @@
         <li><b>Andere Rechner erreichen die Seite nicht</b> – Firewall-Regel „Infra-Website“ vorhanden? Richtige IP und ggf. Port (<code>:8080</code>) verwendet?</li>
         <li><b>Upload-Ordner reagiert nicht</b> – Ordner-Status oben prüfen; es muss eine <code>index.html</code> enthalten sein.</li>
         <li><b>News oder Kalender leer</b> – die VM braucht ausgehend Internet (Supabase, HubSpot).</li>
-        <li>Details stehen immer in <code>logs\server.log</code>.</li>
+        <li>Details stehen immer im Bereich <b>Protokoll</b> (Stufe „Fehler“) bzw. in <code>logs\</code>.</li>
       </ul>
     </div>
   </details>
@@ -272,6 +330,26 @@ async function refresh() {
   $('fAddr').textContent = sy.ips.map(ip => `http://${ip}${sv.port === 80 ? '' : ':' + sv.port}/`).join('  ·  ') || '–';
   items('restarts', sv.restarts.map((x, i) => [fmtDate(x), i === 0 ? 'aktuell' : '']), '–');
   renderAlerts(d, memPct);
+  const mon = d.monitor || [];
+  const spark = (id, key, limit) => {
+    const pts = mon.filter(x => x[key] != null);
+    const svg = $(id);
+    if (pts.length < 2) { svg.innerHTML = ''; return; }
+    const t0 = pts[0].t, span = Math.max(1, pts.at(-1).t - t0);
+    const xy = pts.map(x => [((x.t - t0) / span * 300).toFixed(1), (70 - x[key] / 100 * 66 - 2).toFixed(1)]);
+    const line = 'M' + xy.map(p => p.join(',')).join('L');
+    const ly = (70 - limit / 100 * 66 - 2).toFixed(1);
+    svg.innerHTML = `<line x1="0" x2="300" y1="${ly}" y2="${ly}"/><path class="area" d="${line}L300,70L0,70Z"/><path class="line" d="${line}"/>`;
+    const vals = pts.map(x => x[key]);
+    return `Ø ${Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)} % · max ${Math.max(...vals)} % · Grenze ${limit} %`;
+  };
+  $('spCpuT').textContent = spark('spCpu', 'cpu', 90) || 'Sammle Daten …';
+  $('spMemT').textContent = spark('spMem', 'mem', 90) || 'Sammle Daten …';
+  $('spDiskT').textContent = spark('spDisk', 'disk', 85) || 'Sammle Daten …';
+  $('events').innerHTML = (d.events || []).length
+    ? d.events.map(e => `<li><time>${fmtDate(e.t)}</time><span class="lvl lvl--${e.level}">${({ info: 'Info', warn: 'Warnung', error: 'Fehler' })[e.level] || e.level}</span><span>${esc(e.msg)}</span></li>`).join('')
+    : '<li class="empty">Keine Ereignisse – alles ruhig.</li>';
+  rows('guard', [['Protokoll-Ordner', `${fmtBytes(d.logBytes)} von max. ${d.logs.maxMB} MB`], ['Aufbewahrung', `${d.logs.days} Tage`], ['Uploads gesperrt unter', `${fmtBytes(d.logs.minFreeMB * 1048576)} frei`], ['Automatisch aufgeräumt', 'stündlich']]);
 }
 
 /* Warnings: shown at the top of the page and in the browser tab title. */
@@ -286,21 +364,50 @@ function renderAlerts(d, memPct) {
   if (memPct >= 95) add('crit', `Arbeitsspeicher voll (${memPct} %)`, 'Die VM kann langsam werden oder Programme beenden. Andere Programme schließen oder RAM erhöhen.');
   else if (memPct >= 85) add('warn', `Arbeitsspeicher hoch (${memPct} %)`, `${fmtBytes(sy.memTotal - sy.memFree)} von ${fmtBytes(sy.memTotal)} belegt.`);
   if (sy.cpuPercent >= 90) add('warn', `CPU stark ausgelastet (${sy.cpuPercent} %)`, 'Kurzzeitig normal (z. B. bei Windows-Updates). Hält es an, prüfen, welches Programm die Last erzeugt.');
-  if (d.logBytes >= 500 * 1048576) add('crit', `Logdatei sehr groß (${fmtBytes(d.logBytes)})`, 'logs\\server.log löschen oder leeren – sie wird beim nächsten Start neu angelegt.');
-  else if (d.logBytes >= 100 * 1048576) add('warn', `Logdatei wächst (${fmtBytes(d.logBytes)})`, 'logs\\server.log bei Gelegenheit leeren.');
+  if (d.logBytes >= d.logs.maxMB * 1048576 * 1.2) add('warn', `Protokoll größer als erlaubt (${fmtBytes(d.logBytes)})`, `Wird stündlich automatisch auf ${d.logs.maxMB} MB gekürzt – bleibt der Wert, Ordner logs prüfen.`);
   const lastHour = sv.restarts.filter(x => Date.now() - new Date(x) < 3600e3).length;
-  if (lastHour >= 5) add('crit', `Server ist ${lastHour}× in der letzten Stunde neu gestartet`, 'Deutet auf einen Absturz hin. Details in logs\\server.log.');
+  if (lastHour >= 5) add('crit', `Server ist ${lastHour}× in der letzten Stunde neu gestartet`, 'Deutet auf einen Absturz hin. Details unten im Protokoll (Stufe „Fehler“).');
   if (!site.live) add('warn', 'Keine Website veröffentlicht', 'Besucher sehen „Noch keine Version hochgeladen“. Den Ordner dist auf die Kugel ziehen.');
   if (/^Fehler/.test(watch.message)) add('crit', 'Upload-Ordner: Fehler', watch.message);
   else if (/keine index\.html/.test(watch.message)) add('warn', 'Upload-Ordner enthält keine Website', watch.message);
   const today = tr.today.requests, err5 = Object.entries(tr.status).filter(([k]) => +k >= 500).reduce((a, [, v]) => a + v, 0);
-  if (err5 > 0 && today > 0 && err5 / Math.max(today, 1) > 0.05) add('warn', 'Auffällig viele Serverfehler', `${n(err5)} Antworten mit Fehler 5xx – Details in logs\\server.log.`);
+  if (err5 > 0 && today > 0 && err5 / Math.max(today, 1) > 0.05) add('warn', 'Auffällig viele Serverfehler', `${n(err5)} Antworten mit Fehler 5xx – Details unten im Protokoll.`);
 
   $('alerts').innerHTML = out.sort((a, b) => (a.level === 'crit' ? -1 : 1) - (b.level === 'crit' ? -1 : 1))
     .map(a => `<div class="alert alert--${a.level}"><i></i><div><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div></div>`).join('');
   document.title = (out.length ? `(${out.length}) ` : '') + 'L-mobile · Test 01';
 }
 refresh(); setInterval(refresh, 10000);
+
+const LV = { info: 'Info', warn: 'Warnung', error: 'Fehler', debug: 'Debug', raw: '–' };
+async function loadLogs(keepFile = true) {
+  const name = keepFile && $('lgFile').value ? $('lgFile').value : '';
+  const qs = new URLSearchParams({ level: $('lgLevel').value, q: $('lgQ').value, limit: 400 });
+  if (name) qs.set('name', name);
+  let d;
+  try { d = await (await fetch('/admin/logs?' + qs, { cache: 'no-store' })).json(); } catch { return; }
+  if (d.error) { $('lgRows').innerHTML = `<tr><td colspan="3">${esc(d.error)}</td></tr>`; return; }
+  const sel = $('lgFile'), cur = sel.value;
+  sel.innerHTML = d.files.map(f => `<option value="${esc(f.name)}">${esc(f.name.replace('.log', '').replace('access-', 'Zugriffe '))}${/^\d/.test(f.name) ? ' · Ereignisse' : ''} (${fmtBytes(f.size)})</option>`).join('');
+  sel.value = cur || d.name;
+  $('lgDl').href = '/admin/logs?download=1&name=' + encodeURIComponent(sel.value || d.name);
+  const access = /^access-/.test(d.name);
+  $('lgRows').innerHTML = d.rows.length ? d.rows.map(r => {
+    const time = r.t ? new Date(r.t).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' }) : '';
+    if (access) {
+      const lvl = r.s >= 500 ? 'error' : r.s >= 400 ? 'warn' : 'info';
+      return `<tr><td>${time}</td><td><span class="lvl lvl--${lvl}">${r.s}</span></td><td>${esc(r.m)} ${esc(r.p)} <small>· ${esc(r.ip || '')} · ${fmtBytes(r.b || 0)} · ${r.ms} ms</small></td></tr>`;
+    }
+    const extra = Object.entries(r).filter(([k]) => !['t', 'level', 'msg', 'stack'].includes(k)).map(([k, v]) => `${k}: ${v}`).join(' · ');
+    return `<tr><td>${time}</td><td><span class="lvl lvl--${esc(r.level)}">${LV[r.level] || esc(r.level)}</span></td><td>${esc(r.msg)}${extra ? ` <small>· ${esc(extra)}</small>` : ''}${r.stack ? `<br><small>${esc(r.stack.split('\n').slice(0, 3).join(' / '))}</small>` : ''}</td></tr>`;
+  }).join('') : '<tr><td colspan="3" class="empty">Keine Einträge</td></tr>';
+}
+let qTimer;
+$('lgFile').addEventListener('change', () => loadLogs());
+$('lgLevel').addEventListener('change', () => loadLogs());
+$('lgQ').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(loadLogs, 300); });
+loadLogs(false);
+setInterval(() => $('lgLive').checked && loadLogs(), 10000);
 
 // ---- upload ----
 const drop = $('orb'), pick = $('pick'), status = $('status');

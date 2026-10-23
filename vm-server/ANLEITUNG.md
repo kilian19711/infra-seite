@@ -73,7 +73,7 @@ Besucher und Seitenaufrufe (heute, 14 Tage), meistbesuchte Seiten, CPU/RAM/Festp
 ## Wartung
 | Aufgabe | So geht's |
 |---|---|
-| Log ansehen | `C:\infra-website\logs\server.log` |
+| Protokoll ansehen | Upload-Seite → Bereich „Protokoll“ (oder Ordner `logs\`) |
 | Passwort / Port / Ordner ändern | `install.ps1` erneut ausführen |
 | Server sofort neu starten | Aufgabenplanung → „Infra-Website Neustart 2 Uhr“ → *Ausführen* |
 | Alles entfernen | Aufgaben „Infra-Website*“ und Firewall-Regel „Infra-Website“ löschen, Ordner löschen |
