@@ -161,13 +161,23 @@ export function safeJoin(base, rel) {
 console.assert(safeJoin(SITE, 'a/b.js') === path.join(SITE, 'a', 'b.js'));
 console.assert(safeJoin(SITE, '../config.json') === null && safeJoin(SITE, '..\\x') === null && safeJoin(SITE, 'C:/x') === null);
 
-function authorized(req) {
-  const m = /^Basic (.+)$/.exec(req.headers.authorization || '');
-  if (!m) return false;
-  const pass = Buffer.from(m[1], 'base64').toString().split(':').slice(1).join(':');
-  const a = crypto.createHash('sha256').update(pass).digest(), b = crypto.createHash('sha256').update(cfg.password).digest();
+/* Login: the page asks for the password every time it is opened. The token lives only in the page's memory
+   (no cookie, no storage) – reload, new tab or another PC means a new password prompt. Tokens expire after 8 h.
+   Brute force: 5 wrong attempts per IP lock that IP for 5 minutes. */
+const TOKENS = new Map(); // token -> expiry
+const FAILS = new Map();  // ip -> { n, until }
+const TOKEN_TTL = 8 * 3600e3;
+const passwordOk = pass => {
+  const a = crypto.createHash('sha256').update(String(pass)).digest(), b = crypto.createHash('sha256').update(cfg.password).digest();
   return crypto.timingSafeEqual(a, b);
+};
+function authorized(req) {
+  const m = /^Bearer ([a-f0-9]{64})$/.exec(req.headers.authorization || '');
+  const exp = m && TOKENS.get(m[1]);
+  if (!exp || exp < Date.now()) { if (m) TOKENS.delete(m[1]); return false; }
+  return true;
 }
+setInterval(() => { const now = Date.now(); for (const [k, v] of TOKENS) if (v < now) TOKENS.delete(k); }, 600e3).unref();
 
 function sendFile(res, file, status = 200) {
   const ext = path.extname(file).toLowerCase();
@@ -202,15 +212,33 @@ const readBody = (req, limit) => new Promise((resolve, reject) => {
 });
 
 async function admin(req, res, url) {
-  if (!authorized(req)) {
-    if (req.headers.authorization) log('warn', 'Falsches Passwort für /admin', { ip: req.socket.remoteAddress });
-    res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Website-Upload", charset="UTF-8"' }).end('Anmeldung erforderlich');
-    return;
-  }
-  const json = (code, body) => res.writeHead(code, { 'Content-Type': 'application/json' }).end(JSON.stringify(body));
+  const json = (code, body) => res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(JSON.stringify(body));
+  // The page itself holds no data – it shows the login form and loads everything after login.
   if (req.method === 'GET' && url.pathname === '/admin') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     return fs.createReadStream(path.join(ROOT, 'admin.html')).pipe(res);
+  }
+  if (req.method === 'POST' && url.pathname === '/admin/login') {
+    const ip = req.socket.remoteAddress, f = FAILS.get(ip);
+    if (f && f.until > Date.now()) return json(429, { error: 'Zu viele Fehlversuche – bitte 5 Minuten warten.' });
+    let pass = '';
+    try { pass = JSON.parse((await readBody(req, 4096)).toString()).password || ''; } catch { /* empty */ }
+    if (!passwordOk(pass)) {
+      const n = (f && f.until <= Date.now() && f.n >= 5 ? 0 : f?.n || 0) + 1;
+      FAILS.set(ip, { n, until: n >= 5 ? Date.now() + 300e3 : 0 });
+      log('warn', n >= 5 ? 'Anmeldung gesperrt nach 5 Fehlversuchen' : 'Falsches Passwort für /admin', { ip });
+      return json(401, { error: n >= 5 ? 'Zu viele Fehlversuche – bitte 5 Minuten warten.' : 'Passwort falsch.' });
+    }
+    FAILS.delete(ip);
+    const token = crypto.randomBytes(32).toString('hex');
+    TOKENS.set(token, Date.now() + TOKEN_TTL);
+    log('info', 'Anmeldung an der Upload-Seite', { ip });
+    return json(200, { token });
+  }
+  if (!authorized(req)) return json(401, { error: 'Anmeldung erforderlich' });
+  if (req.method === 'POST' && url.pathname === '/admin/logout') {
+    TOKENS.delete(req.headers.authorization.slice(7));
+    return json(200, { ok: true });
   }
   if (req.method === 'GET' && url.pathname === '/admin/info') {
     const index = path.join(SITE, 'index.html');

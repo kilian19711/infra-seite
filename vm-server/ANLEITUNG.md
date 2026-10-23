@@ -61,7 +61,7 @@ npm.cmd run build
 ```
 Dann **einer** dieser Wege:
 
-**a) Upload-Seite** – `http://<VM-IP>/admin` öffnen, mit dem Passwort anmelden (Benutzername egal), auf die Kugel klicken und `dist` wählen – oder den Ordner auf die Kugel ziehen. Der Ring um die Kugel zeigt den Fortschritt.
+**a) Upload-Seite** – `http://<VM-IP>/admin` öffnen, Passwort eingeben (die Seite fragt bei jedem Öffnen danach), auf die Kugel klicken und `dist` wählen – oder den Ordner auf die Kugel ziehen. Der Ring um die Kugel zeigt den Fortschritt.
 
 **b) Upload-Ordner** – den Ordner `dist` (oder seinen Inhalt) nach `C:\infra-website\upload` kopieren. Der Server prüft alle 10 Sekunden; sobald sich nichts mehr ändert, geht die Version live und der Upload-Ordner wird geleert. Status steht auf der Upload-Seite unter „Ordner-Status“.
 
@@ -79,6 +79,7 @@ Besucher und Seitenaufrufe (heute, 14 Tage), meistbesuchte Seiten, CPU/RAM/Festp
 | Alles entfernen | Aufgaben „Infra-Website*“ und Firewall-Regel „Infra-Website“ löschen, Ordner löschen |
 
 ## Hinweise
+- Die Upload-Seite fragt bei jedem Öffnen nach dem Passwort (auch nach Neuladen, neuem Tab, anderem PC); Anmeldung gilt max. 8 h, „Abmelden“ beendet sie. Nach 5 Fehlversuchen 5 Minuten Sperre.
 - Die Upload-Seite läuft über HTTP: Das Passwort geht unverschlüsselt durchs Firmennetz → kein Passwort verwenden, das anderswo genutzt wird.
 - Die VM braucht **ausgehend Internet** (Supabase für News/Redaktion, HubSpot-Kalender).
 - Für einen Namen statt IP (`http://infra-website/`) bei der IT einen DNS-Eintrag anfragen.
