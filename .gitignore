@@ -27,3 +27,8 @@ dist-ssr
 graphify-out/cache/
 graphify-out/.graphify_python
 deploy/*.zip
+vm-server/config.json
+vm-server/site/
+vm-server/staging/
+vm-server/logs/
+vm-server/server.pid
