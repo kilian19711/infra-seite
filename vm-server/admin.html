@@ -24,7 +24,7 @@
 
   .top { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 64px); align-items: center; padding: clamp(16px, 4vh, 40px) 0 8px; }
   .orbbox { display: grid; justify-items: center; gap: 10px; text-align: center; }
-  .orb { position: relative; width: min(340px, 72vw); aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle at 50% 45%, #2a6f9a, #07131f 70%); cursor: pointer; box-shadow: 0 30px 80px -30px rgba(0,120,180,.55); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s; }
+  .orb { position: relative; width: min(360px, 72vw); aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle at 42% 38%, #2b7fb0, #061321 72%); cursor: pointer; box-shadow: 0 30px 80px -30px rgba(0,120,180,.55); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s; }
   .orb:hover, .orb.over { transform: scale(1.04); box-shadow: 0 30px 100px -20px rgba(0,154,205,.75); }
   .orb:focus-visible { outline: 3px solid var(--accent); outline-offset: 6px; }
   .orb canvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
@@ -72,6 +72,19 @@
   .empty { color: var(--muted); font-size: .9rem; }
   @media (max-width: 960px) { .card, .card--4 { grid-column: span 6; } .card--6, .card--8 { grid-column: span 12; } }
   @media (max-width: 560px) { .card, .card--4 { grid-column: span 12; } }
+  .doc { margin-top: 40px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); }
+  .doc summary { cursor: pointer; list-style: none; padding: 18px 22px; font-weight: 600; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
+  .doc summary::-webkit-details-marker { display: none; }
+  .doc summary::after { content: '+'; font-size: 1.4rem; font-weight: 400; color: var(--muted); transition: transform .2s; }
+  .doc[open] summary::after { transform: rotate(45deg); }
+  .doc__body { padding: 0 22px 22px; color: var(--muted); font-size: .95rem; max-width: 860px; }
+  .doc__body h3 { color: var(--ink); font-size: 1.02rem; margin: 22px 0 8px; }
+  .doc__body b { color: var(--ink); font-weight: 600; }
+  .doc__body ul, .doc__body ol { padding-left: 1.2rem; margin: 0; display: grid; gap: 6px; }
+  .doc__body code { font-family: inherit; color: var(--ink); background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 6px; }
+  .doc__body table { border-collapse: collapse; width: 100%; }
+  .doc__body td { padding: 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .doc__body td:first-child { width: 190px; }
   footer { color: var(--muted); font-size: .82rem; text-align: center; padding: 40px 0 28px; }
 </style>
 </head>
@@ -85,7 +98,7 @@
   <section class="top">
     <div class="orbbox">
       <button class="orb" id="orb" type="button" aria-label="Ordner auswählen und hochladen">
-        <canvas id="orbCanvas" width="560" height="560"></canvas>
+        <canvas id="orbCanvas"></canvas>
         <span class="orb__ring" id="ring"></span>
       </button>
       <strong id="dropText">Klicken oder Ordner auf die Kugel ziehen</strong>
@@ -130,6 +143,74 @@
     <div class="card card--6"><p class="label">Veröffentlichungen</p><ul class="list" id="deploys"></ul></div>
     <div class="card card--6"><p class="label">Neustarts</p><ul class="list" id="restarts"></ul></div>
   </div>
+  <details class="doc">
+    <summary>Dokumentation – so funktioniert das Programm</summary>
+    <div class="doc__body">
+      <h3>Wofür es da ist</h3>
+      <p>Dieses Programm hostet die L-mobile-Website auf dieser VM im Firmennetz. Es liefert die Seite an alle Rechner im Netz aus, nimmt neue Versionen entgegen und zeigt den Zustand von Server und Website. Es besteht aus einem einzigen Node.js-Programm ohne weitere Pakete.</p>
+
+      <h3>Neue Version veröffentlichen</h3>
+      <ol>
+        <li>Auf dem Entwicklungs-PC im Projekt <code>npm.cmd run build</code> ausführen – das erzeugt den Ordner <code>dist</code>.</li>
+        <li><b>Weg 1 – diese Seite:</b> auf die Kugel klicken und <code>dist</code> wählen, oder den Ordner auf die Kugel ziehen. Der Ring zeigt den Fortschritt.</li>
+        <li><b>Weg 2 – Upload-Ordner:</b> <code>dist</code> (oder seinen Inhalt) in den überwachten Ordner kopieren (oben unter „Überwachter Ordner“). Alle 10 Sekunden wird geprüft; sobald sich nichts mehr ändert, geht die Version live und der Ordner wird geleert.</li>
+      </ol>
+      <p>In beiden Fällen gilt: Erst wenn <b>alles vollständig</b> angekommen ist und eine <code>index.html</code> enthalten ist, wird die Live-Version ersetzt. Die alte Version wird danach gelöscht. Bricht ein Upload ab, bleibt die bisherige Website unverändert online. Ob man <code>dist</code> selbst oder nur seinen Inhalt hochlädt, ist egal – die Ordnerstruktur wird übernommen.</p>
+
+      <h3>Funktionen im Überblick</h3>
+      <ul>
+        <li><b>Website-Auslieferung</b> für alle Rechner im Netz, inklusive Unterseiten wie <code>/kontakt</code> und vorgerenderter News-Seiten. Unbekannte Dateien liefern „nicht gefunden“, alle anderen Adressen die Website-App.</li>
+        <li><b>Caching:</b> Seiten werden nie zwischengespeichert (Updates sofort sichtbar), Skripte und Styles ein Jahr, Bilder eine Stunde.</li>
+        <li><b>Upload per Klick / Drag &amp; Drop</b> mit Fortschrittsanzeige, 6 Dateien parallel, max. 50 MB pro Datei.</li>
+        <li><b>Überwachter Upload-Ordner</b> mit automatischer Veröffentlichung.</li>
+        <li><b>Dauerbetrieb:</b> startet beim Hochfahren der VM automatisch (auch ohne Anmeldung) und nach einem Absturz nach 5 Sekunden neu.</li>
+        <li><b>Neustart täglich um 02:00 Uhr</b> – hält den Prozess frisch; die Seite ist dabei ca. 5 Sekunden nicht erreichbar.</li>
+        <li><b>Übersicht</b> (aktualisiert alle 10 Sekunden): Besucher und Seitenaufrufe heute und der letzten 14 Tage, meistbesuchte Seiten, Anfragen, ausgelieferte Datenmenge, Antwort-Codes, CPU, Arbeitsspeicher, Festplatte, Laufzeit, Server- und Systemdaten, letzte Veröffentlichungen und Neustarts.</li>
+      </ul>
+
+      <h3>Statistiken &amp; Datenschutz</h3>
+      <p>Besucher werden gezählt über einen anonymen Tageswert aus IP-Adresse und Browser – IP-Adressen selbst werden <b>nicht</b> gespeichert. Mehrere Kollegen mit derselben Firmen-IP und demselben Browser zählen als ein Besucher. Die Zahlen werden jede Minute in <code>stats.json</code> gesichert und 90 Tage aufbewahrt; sie überstehen den nächtlichen Neustart.</p>
+
+      <h3>Sicherheit</h3>
+      <ul>
+        <li>Diese Seite und alle Upload-Funktionen sind mit Passwort geschützt (Benutzername beliebig). Das Passwort steht nur lokal in <code>config.json</code>.</li>
+        <li>Hochgeladene Dateien können nur im Website-Ordner landen – Pfade wie <code>../</code> werden abgelehnt.</li>
+        <li>Die Seite läuft über HTTP: Das Passwort wird unverschlüsselt im Firmennetz übertragen. Kein Passwort verwenden, das anderswo genutzt wird.</li>
+        <li>Der Upload-Ordner darf nicht der Programmordner sein – das Programm verweigert sonst den Start.</li>
+      </ul>
+
+      <h3>Dateien auf der VM</h3>
+      <table>
+        <tr><td><code>server.mjs</code></td><td>das Programm</td></tr>
+        <tr><td><code>admin.html</code></td><td>diese Seite</td></tr>
+        <tr><td><code>run.cmd</code></td><td>hält das Programm am Laufen</td></tr>
+        <tr><td><code>install.ps1</code></td><td>Einrichtung (Passwort, Port, Ordner, Firewall-Regel, Autostart)</td></tr>
+        <tr><td><code>config.json</code></td><td>Port, Passwort, Upload-Ordner</td></tr>
+        <tr><td><code>site\</code></td><td>die aktuell veröffentlichte Website</td></tr>
+        <tr><td><code>upload\</code></td><td>überwachter Upload-Ordner (Standard)</td></tr>
+        <tr><td><code>stats.json</code></td><td>Statistiken, Veröffentlichungen, Neustarts</td></tr>
+        <tr><td><code>logs\server.log</code></td><td>Protokoll</td></tr>
+      </table>
+
+      <h3>Einrichtung &amp; Änderungen</h3>
+      <ul>
+        <li>Voraussetzung: <b>Node.js LTS</b> auf der VM. Sonst nichts.</li>
+        <li>Einrichten oder Passwort / Port / Ordner ändern: PowerShell als Administrator, im Programmordner <code>powershell -ExecutionPolicy Bypass -File .\install.ps1</code> – optional <code>-Port 8080</code> oder <code>-WatchDir "D:\upload"</code>.</li>
+        <li>Am System geändert wird nur: eine Firewall-Regel „Infra-Website“ (nur dieser Port) und die geplanten Aufgaben „Infra-Website“ und „Infra-Website Neustart 2 Uhr“.</li>
+        <li>Sofort neu starten: Aufgabenplanung → „Infra-Website Neustart 2 Uhr“ → Ausführen.</li>
+        <li>Entfernen: beide Aufgaben und die Firewall-Regel löschen, Programmordner löschen.</li>
+      </ul>
+
+      <h3>Wenn etwas nicht geht</h3>
+      <ul>
+        <li><b>„Noch keine Version hochgeladen“</b> – einmal <code>dist</code> veröffentlichen.</li>
+        <li><b>Andere Rechner erreichen die Seite nicht</b> – Firewall-Regel „Infra-Website“ vorhanden? Richtige IP und ggf. Port (<code>:8080</code>) verwendet?</li>
+        <li><b>Upload-Ordner reagiert nicht</b> – Ordner-Status oben prüfen; es muss eine <code>index.html</code> enthalten sein.</li>
+        <li><b>News oder Kalender leer</b> – die VM braucht ausgehend Internet (Supabase, HubSpot).</li>
+        <li>Details stehen immer in <code>logs\server.log</code>.</li>
+      </ul>
+    </div>
+  </details>
   <footer>L-mobile infrastructure · Automatischer Neustart täglich um 02:00 Uhr</footer>
 </div>
 
@@ -253,23 +334,42 @@ pick.addEventListener('change', () => { upload([...pick.files].map(f => ({ path:
 
 // ---- plasma orb (WebGL fragment shader; static gradient if WebGL is unavailable) ----
 (() => {
-  const c = $('orbCanvas'), gl = c.getContext('webgl', { premultipliedAlpha: false });
+  const c = $('orbCanvas'), gl = c.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: true });
+  const fit = () => { const px = Math.min(2, devicePixelRatio || 1); const w = Math.round(c.clientWidth * px); if (c.width !== w) c.width = c.height = w; };
+  addEventListener('resize', fit);
   if (!gl) return;
   const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-  const fs = `precision mediump float;uniform vec2 r;uniform float t,e;
-  float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-  float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}
-  float fb(vec2 p){float v=0.,a=.5;for(int k=0;k<5;k++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
-  void main(){vec2 uv=(gl_FragCoord.xy*2.-r)/r.y;float d=length(uv);if(d>1.){gl_FragColor=vec4(0);return;}
-    float z=sqrt(1.-d*d);vec2 q=uv/(z+.6);float a=atan(q.y,q.x),s=t*(.12+.25*e);
-    vec2 w=vec2(fb(q*2.2+vec2(s,-s)),fb(q*2.2+vec2(-s*.8,s*1.1)+4.));
-    float f=fb(q*3.+w*2.2+vec2(cos(a+s),sin(a-s)));
-    float fil=pow(1.-abs(sin(f*9.+t*.6)),6.);
-    vec3 col=mix(vec3(.02,.07,.14),vec3(0.,.6,.8),f*f*1.6);
-    col+=vec3(.55,.9,1.)*fil*(.35+.5*e)*(1.-d*.6);
-    col+=vec3(.75,.95,1.)*pow(max(0.,1.-d*1.6),3.)*(.9+.6*e);
-    col+=vec3(.2,.7,1.)*pow(d,6.)*.9;
-    col*=.75+.25*z;gl_FragColor=vec4(col,1.);}`;
+  const fs = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
+  uniform vec2 r;uniform float t,e;
+  float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+  float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*f*(f*(f*6.-15.)+10.);
+    return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+1.),u.x),u.y);}
+  float fb(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int k=0;k<6;k++){v+=a*n(p);p=m*p;a*=.5;}return v;}
+  void main(){
+    vec2 uv=(gl_FragCoord.xy*2.-r)/r.y*1.04;float d=length(uv);
+    float px=2.5/r.y;float edge=1.-smoothstep(1.-px,1.,d);
+    if(edge<=0.){gl_FragColor=vec4(0.);return;}
+    float z=sqrt(max(0.,1.-d*d));vec3 nrm=vec3(uv,z);
+    vec2 q=uv/(z*.8+.45);float s=t*(.07+.16*e);
+    vec2 w1=vec2(fb(q*1.7+vec2(s,-.6*s)),fb(q*1.7+vec2(-.7*s,s)+5.2));
+    vec2 w2=vec2(fb(q*2.3+w1*2.4+vec2(1.7,9.2)+s*.5),fb(q*2.3+w1*2.4+vec2(8.3,2.8)-s*.4));
+    float f=fb(q*2.6+w2*2.8);
+    float fil=pow(1.-abs(2.*fract(f*4.+t*.05)-1.),14.)*smoothstep(.25,.75,f);
+    float fil2=pow(1.-abs(sin((w2.x-w2.y)*11.+t*.35)),24.);
+    vec3 deep=vec3(.01,.05,.11),mid=vec3(0.,.45,.72),hi=vec3(.25,.85,1.);
+    vec3 col=mix(deep,mid,smoothstep(.2,.8,f));col=mix(col,hi,smoothstep(.62,1.,f)*.75);
+    col+=vec3(.55,.92,1.)*(fil*.9+fil2*.55)*(.55+.7*e)*(.35+.65*z);
+    float core=exp(-d*d*5.5);col+=vec3(.75,.96,1.)*core*(.95+.6*e)*(.75+.35*f);
+    float fres=pow(1.-z,3.);col+=vec3(.18,.62,1.)*fres*1.3;
+    vec3 L=normalize(vec3(-.45,.55,.85));float spec=pow(max(dot(reflect(-L,nrm),vec3(0,0,1)),0.),60.);
+    col+=vec3(1.)*spec*.55;
+    col=col/(1.+col*.3);col=pow(col,vec3(.92));
+    col+=(h(gl_FragCoord.xy+t)-.5)/255.;
+    gl_FragColor=vec4(col*edge,edge);}`;
   const sh = (type, src) => { const x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); return x; };
   const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
   if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return;
@@ -283,7 +383,7 @@ pick.addEventListener('change', () => { upload([...pick.files].map(f => ({ path:
   const frame = ms => {
     const target = drop.classList.contains('busy') ? 1 : drop.matches(':hover') || drop.classList.contains('over') ? .5 : 0;
     energy += (target - energy) * .05;
-    gl.viewport(0, 0, c.width, c.height);
+    fit(); gl.viewport(0, 0, c.width, c.height);
     gl.uniform2f(uR, c.width, c.height); gl.uniform1f(uT, still ? 4 : ms / 1000); gl.uniform1f(uE, energy);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if (!still || target) requestAnimationFrame(frame);
