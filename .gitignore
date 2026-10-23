@@ -32,3 +32,4 @@ vm-server/site/
 vm-server/staging/
 vm-server/logs/
 vm-server/server.pid
+vm-server/stats.json

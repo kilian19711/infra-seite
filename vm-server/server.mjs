@@ -5,6 +5,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -13,6 +14,53 @@ const STAGING = path.join(ROOT, 'staging');
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
 const PORT = Number(process.env.PORT || cfg.port || 80);
 const MAX_FILE = 50 * 1024 * 1024;
+const STARTED = new Date();
+
+/* Traffic statistics, persisted to stats.json every minute (survives the nightly restart).
+   Visitors = distinct daily hash of IP + user agent (no raw IPs stored). Paths capped to keep the file small. */
+const STATS_FILE = path.join(ROOT, 'stats.json');
+const stats = (() => { try { return JSON.parse(fs.readFileSync(STATS_FILE, 'utf8')); } catch { return {}; } })();
+stats.days ??= {}; stats.paths ??= {}; stats.status ??= {}; stats.total ??= 0; stats.bytes ??= 0; stats.deploys ??= []; stats.restarts ??= [];
+stats.restarts = [STARTED.toISOString(), ...stats.restarts].slice(0, 20);
+const visitorsToday = new Set();
+const today = () => new Date().toISOString().slice(0, 10);
+function track(req, res, rel) {
+  const d = today();
+  const day = (stats.days[d] ??= { requests: 0, visitors: 0, pages: 0 });
+  if (day.visitorsKey !== d) { visitorsToday.clear(); day.visitorsKey = d; }
+  day.requests++; stats.total++;
+  const v = crypto.createHash('sha256').update(d + (req.socket.remoteAddress || '') + (req.headers['user-agent'] || '')).digest('base64').slice(0, 16);
+  if (!visitorsToday.has(v)) { visitorsToday.add(v); day.visitors++; }
+  res.on('finish', () => {
+    stats.status[res.statusCode] = (stats.status[res.statusCode] || 0) + 1;
+    stats.bytes += Number(res.getHeader('content-length') || 0) || 0;
+    if (!path.extname(rel) && res.statusCode === 200) {
+      day.pages++;
+      if (stats.paths[rel] || Object.keys(stats.paths).length < 500) stats.paths[rel] = (stats.paths[rel] || 0) + 1;
+    }
+  });
+}
+const saveStats = () => {
+  const keep = Object.keys(stats.days).sort().slice(-90); // 90 days of history
+  stats.days = Object.fromEntries(keep.map(k => [k, stats.days[k]]));
+  fs.writeFileSync(STATS_FILE, JSON.stringify(stats));
+};
+setInterval(saveStats, 60_000).unref();
+process.on('SIGINT', () => { saveStats(); process.exit(0); });
+
+// CPU usage in % from two samples of os.cpus() (Windows has no load average).
+let cpuPrev = os.cpus();
+function cpuPercent() {
+  const now = os.cpus();
+  let idle = 0, total = 0;
+  now.forEach((c, i) => {
+    const p = cpuPrev[i].times, t = c.times;
+    const tot = Object.values(t).reduce((a, b) => a + b, 0) - Object.values(p).reduce((a, b) => a + b, 0);
+    idle += t.idle - p.idle; total += tot;
+  });
+  cpuPrev = now;
+  return total ? Math.round(100 * (1 - idle / total)) : 0;
+}
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -44,13 +92,14 @@ function authorized(req) {
 function sendFile(res, file, status = 200) {
   const ext = path.extname(file).toLowerCase();
   const cache = ext === '.html' ? 'no-cache' : file.includes(`${path.sep}assets${path.sep}`) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600';
-  res.writeHead(status, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': cache });
+  res.writeHead(status, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': cache, 'Content-Length': fs.statSync(file).size });
   fs.createReadStream(file).pipe(res);
 }
 
 function serveSite(req, res) {
   let rel;
   try { rel = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.writeHead(400).end(); return; }
+  track(req, res, rel);
   const file = rel === '/' ? path.join(SITE, 'index.html') : safeJoin(SITE, rel);
   const index = path.join(SITE, 'index.html');
   if (!fs.existsSync(index)) { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Noch keine Version hochgeladen – /admin öffnen.'); return; }
@@ -82,6 +131,29 @@ async function admin(req, res, url) {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     return fs.createReadStream(path.join(ROOT, 'admin.html')).pipe(res);
   }
+  if (req.method === 'GET' && url.pathname === '/admin/info') {
+    const index = path.join(SITE, 'index.html');
+    let files = 0, bytes = 0;
+    const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p); else { files++; bytes += fs.statSync(p).size; }
+    });
+    if (fs.existsSync(SITE)) walk(SITE);
+    let disk = null;
+    try { const f = fs.statfsSync(ROOT); disk = { total: f.blocks * f.bsize, free: f.bavail * f.bsize }; } catch { /* older Node */ }
+    const ips = Object.values(os.networkInterfaces()).flat().filter(n => n && n.family === 'IPv4' && !n.internal).map(n => n.address);
+    const d = today();
+    return json(200, {
+      server: { started: STARTED, uptime: process.uptime(), port: PORT, node: process.version, pid: process.pid, memory: process.memoryUsage().rss, restarts: stats.restarts },
+      system: { hostname: os.hostname(), os: `${os.type()} ${os.release()}`, cpu: os.cpus()[0]?.model.trim(), cores: os.cpus().length, cpuPercent: cpuPercent(),
+        memTotal: os.totalmem(), memFree: os.freemem(), uptime: os.uptime(), ips, disk },
+      site: { live: fs.existsSync(index), published: fs.existsSync(index) ? fs.statSync(index).mtime : null, files, bytes },
+      traffic: { today: stats.days[d] || { requests: 0, visitors: 0, pages: 0 }, total: stats.total, bytes: stats.bytes, status: stats.status,
+        days: Object.entries(stats.days).sort().slice(-14).map(([day, v]) => ({ day, requests: v.requests, visitors: v.visitors, pages: v.pages })),
+        top: Object.entries(stats.paths).sort((x, y) => y[1] - x[1]).slice(0, 8) },
+      deploys: stats.deploys,
+    });
+  }
   if (req.method === 'POST' && url.pathname === '/admin/begin') {
     fs.rmSync(STAGING, { recursive: true, force: true });
     fs.mkdirSync(STAGING, { recursive: true });
@@ -105,7 +177,11 @@ async function admin(req, res, url) {
     if (fs.existsSync(SITE)) fs.renameSync(SITE, old);
     fs.renameSync(STAGING, SITE);
     fs.rmSync(old, { recursive: true, force: true });
-    console.log(new Date().toISOString(), 'neue Version veröffentlicht');
+    const info = { at: new Date().toISOString(), files: 0, from: req.socket.remoteAddress };
+    const count = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => e.isDirectory() ? count(path.join(d, e.name)) : info.files++);
+    count(SITE);
+    stats.deploys = [info, ...stats.deploys].slice(0, 20); saveStats();
+    console.log(info.at, 'neue Version veröffentlicht');
     return json(200, { ok: true });
   }
   json(404, { error: 'unbekannt' });

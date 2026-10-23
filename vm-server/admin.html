@@ -3,42 +3,172 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Website-Upload</title>
+<title>L-mobile · Test 01</title>
 <style>
-  :root { --accent: #009acd; --line: #e2e7ee; --muted: #5b6b80; }
+  :root {
+    --bg: #f3f1ec; --card: #fbfaf7; --ink: #141414; --muted: #77736b; --line: #e3dfd6;
+    --accent: #009acd; --ok: #1f9d55; --warn: #c98a0a; --err: #c0362c; --r: 20px;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.5 'Segoe UI', system-ui, sans-serif; background: #f3f5f8; color: #0f172a; }
-  main { max-width: 640px; margin: 3rem auto; padding: 0 16px; }
-  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
-  p { color: var(--muted); margin: 0 0 1.25rem; }
-  .drop { display: grid; place-items: center; gap: .5rem; min-height: 220px; padding: 2rem; text-align: center; border: 2px dashed #b9c6d6; border-radius: 14px; background: #fff; cursor: pointer; transition: border-color .2s, background .2s; }
-  .drop.over { border-color: var(--accent); background: #eef8fc; }
-  .drop strong { font-size: 1.05rem; }
-  .bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 1.25rem; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .brand__mark { width: 32px; height: 32px; border-radius: 10px; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: .85rem; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); color: var(--muted); font-size: .82rem; font-weight: 500; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; }
+  .on .dot { background: var(--ok); box-shadow: 0 0 0 4px rgba(31,157,85,.15); }
+
+  .hero { text-align: center; padding: clamp(20px, 5vh, 56px) 0 8px; }
+  .eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  h1 { font-size: clamp(2.2rem, 5.5vw, 4rem); line-height: 1.03; letter-spacing: -0.045em; font-weight: 650; margin: 0; }
+  .lead { max-width: 520px; margin: 16px auto 0; color: var(--muted); font-size: 1.02rem; }
+
+  /* the one upload field */
+  .drop { display: grid; place-items: center; gap: 14px; margin: 32px auto 0; max-width: 760px; min-height: 230px; padding: 32px; border: 1.5px dashed #cfc9bd; border-radius: 28px; background: var(--card); text-align: center; transition: border-color .2s, background .2s, box-shadow .2s; }
+  .drop.over { border-color: var(--accent); background: #f4fafc; box-shadow: 0 0 0 6px rgba(0,154,205,.10); }
+  .drop__icon { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--bg); color: var(--ink); }
+  .drop strong { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em; }
+  .drop small { color: var(--muted); font-size: .9rem; }
+  .btn { display: inline-flex; align-items: center; height: 42px; padding: 0 20px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 600; cursor: pointer; text-decoration: none; transition: border-color .2s, transform .15s; }
+  .btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .bar { width: min(420px, 100%); height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
   .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
-  #status { margin-top: .75rem; font-size: .92rem; min-height: 1.5em; }
-  .ok { color: #15803d; } .err { color: #b91c1c; }
-  a { color: #007ea8; }
+  #status { min-height: 1.5em; font-size: .92rem; }
+  #status.ok { color: var(--ok); } #status.err { color: var(--err); }
+  #status a { color: var(--ink); font-weight: 600; }
+
+  /* statistics */
+  h2 { font-size: 1.5rem; letter-spacing: -0.03em; font-weight: 650; margin: 56px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+  .card { grid-column: span 3; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; min-width: 0; }
+  .card--6 { grid-column: span 6; } .card--4 { grid-column: span 4; } .card--8 { grid-column: span 8; } .card--12 { grid-column: span 12; }
+  .label { font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  .big { font-size: 2rem; font-weight: 650; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hint { color: var(--muted); font-size: .86rem; margin-top: 6px; }
+  .meter { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 14px; }
+  .meter span { display: block; height: 100%; width: 0; background: var(--ink); border-radius: 99px; transition: width .4s; }
+  .meter.hot span { background: var(--warn); }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 9px 16px; font-size: .92rem; }
+  dt { color: var(--muted); } dd { margin: 0; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: 8px; }
+  .chart div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; min-width: 0; }
+  .chart i { display: block; width: 100%; max-width: 34px; border-radius: 8px 8px 3px 3px; background: var(--ink); min-height: 3px; }
+  .chart div:last-child i { background: var(--accent); }
+  .chart span { font-size: .7rem; color: var(--muted); }
+  .list { list-style: none; margin: 0; padding: 0; font-size: .92rem; }
+  .list li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .list li:last-child { border-bottom: 0; }
+  .list code { font-family: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list b { font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); font-size: .9rem; }
+  @media (max-width: 960px) { .card, .card--4 { grid-column: span 6; } .card--6, .card--8 { grid-column: span 12; } }
+  @media (max-width: 560px) { .card, .card--4 { grid-column: span 12; } }
+  footer { color: var(--muted); font-size: .82rem; text-align: center; padding: 40px 0 28px; }
 </style>
 </head>
 <body>
-<main>
-  <h1>Neue Website-Version hochladen</h1>
-  <p>Den Ordner <code>dist</code> (nach <code>npm run build</code>) hier hineinziehen oder anklicken und auswählen. Die alte Version wird erst ersetzt, wenn alles vollständig hochgeladen ist – und dann gelöscht.</p>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="brand__mark">L</span>L-mobile <span class="pill">Test 01</span></div>
+    <span class="pill" id="live"><i class="dot"></i><span>Prüfe …</span></span>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Website-Deployment</p>
+    <h1>Neue Version,<br>ein Ordner.</h1>
+    <p class="lead">Den Ordner <b>dist</b> nach dem Build hier ablegen. Die alte Version wird erst ersetzt, wenn alles vollständig angekommen ist – und danach gelöscht.</p>
+  </section>
+
   <label class="drop" id="drop">
-    <strong>Ordner hierher ziehen</strong>
-    <span>oder klicken zum Auswählen</span>
+    <span class="drop__icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2.5h6.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><path d="M12 16v-5m-2.5 2.5L12 11l2.5 2.5"/></svg></span>
+    <strong id="dropText">Ordner hierher ziehen</strong>
+    <small id="dropSub">Die Ordnerstruktur wird übernommen</small>
+    <span class="btn" id="choose">Ordner auswählen</span>
+    <div class="bar" id="barWrap" hidden><span id="bar"></span></div>
+    <div id="status" role="status"></div>
     <input type="file" id="pick" webkitdirectory multiple hidden>
   </label>
-  <div class="bar"><span id="bar"></span></div>
-  <div id="status"></div>
-</main>
+
+  <h2>Übersicht</h2>
+  <p class="sub">Aktualisiert sich alle 10 Sekunden · <span id="stamp">–</span></p>
+
+  <div class="grid">
+    <div class="card"><p class="label">Besucher heute</p><div class="big" id="vToday">–</div><div class="hint" id="vPages">–</div></div>
+    <div class="card"><p class="label">Anfragen heute</p><div class="big" id="rToday">–</div><div class="hint" id="rTotal">–</div></div>
+    <div class="card"><p class="label">Server läuft seit</p><div class="big" id="up">–</div><div class="hint" id="upSince">–</div></div>
+    <div class="card"><p class="label">Live-Version</p><div class="big" id="pub">–</div><div class="hint" id="pubInfo">–</div></div>
+
+    <div class="card card--4"><p class="label">CPU</p><div class="big" id="cpu">–</div><div class="meter" id="cpuM"><span></span></div><div class="hint" id="cpuInfo">–</div></div>
+    <div class="card card--4"><p class="label">Arbeitsspeicher</p><div class="big" id="mem">–</div><div class="meter" id="memM"><span></span></div><div class="hint" id="memInfo">–</div></div>
+    <div class="card card--4"><p class="label">Festplatte</p><div class="big" id="disk">–</div><div class="meter" id="diskM"><span></span></div><div class="hint" id="diskInfo">–</div></div>
+
+    <div class="card card--8"><p class="label">Besucher · letzte 14 Tage</p><div class="chart" id="chart"></div></div>
+    <div class="card card--4"><p class="label">Meistbesuchte Seiten</p><ul class="list" id="top"></ul></div>
+
+    <div class="card card--4"><p class="label">Server</p><dl id="server"></dl></div>
+    <div class="card card--4"><p class="label">System</p><dl id="system"></dl></div>
+    <div class="card card--4"><p class="label">Antworten</p><dl id="codes"></dl></div>
+
+    <div class="card card--6"><p class="label">Veröffentlichungen</p><ul class="list" id="deploys"></ul></div>
+    <div class="card card--6"><p class="label">Neustarts</p><ul class="list" id="restarts"></ul></div>
+  </div>
+  <footer>L-mobile infrastructure · Automatischer Neustart täglich um 02:00 Uhr</footer>
+</div>
+
 <script>
-const drop = document.getElementById('drop'), pick = document.getElementById('pick');
-const bar = document.getElementById('bar'), status = document.getElementById('status');
+const $ = id => document.getElementById(id);
+const fmtBytes = b => b >= 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.round(b / 1024) + ' KB';
+const fmtDur = s => { const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d ? `${d} T ${h} h` : h ? `${h} h ${m} min` : `${m} min`; };
+const fmtDate = v => v ? new Date(v).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–';
+const n = v => Number(v || 0).toLocaleString('de-DE');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const meter = (id, pct) => { $(id).firstElementChild.style.width = pct + '%'; $(id).classList.toggle('hot', pct >= 85); };
+const rows = (id, pairs) => $(id).innerHTML = pairs.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+const items = (id, list, empty) => $(id).innerHTML = list.length ? list.map(([a, b]) => `<li><code>${esc(a)}</code><b>${esc(b)}</b></li>`).join('') : `<li class="empty">${empty}</li>`;
+
+async function refresh() {
+  let d;
+  try { d = await (await fetch('/admin/info', { cache: 'no-store' })).json(); }
+  catch { $('live').classList.remove('on'); $('live').lastElementChild.textContent = 'Offline'; return; }
+  const { server: sv, system: sy, site, traffic: tr, deploys } = d;
+  $('live').classList.toggle('on', site.live);
+  $('live').lastElementChild.textContent = site.live ? 'Online' : 'Keine Version';
+  $('stamp').textContent = new Date().toLocaleTimeString('de-DE');
+
+  $('vToday').textContent = n(tr.today.visitors); $('vPages').textContent = `${n(tr.today.pages)} Seitenaufrufe`;
+  $('rToday').textContent = n(tr.today.requests); $('rTotal').textContent = `${n(tr.total)} gesamt · ${fmtBytes(tr.bytes)} ausgeliefert`;
+  $('up').textContent = fmtDur(sv.uptime); $('upSince').textContent = `seit ${fmtDate(sv.started)}`;
+  $('pub').textContent = site.published ? new Date(site.published).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '–';
+  $('pubInfo').textContent = site.live ? `${fmtDate(site.published)} · ${n(site.files)} Dateien · ${fmtBytes(site.bytes)}` : 'Noch nichts hochgeladen';
+
+  $('cpu').textContent = sy.cpuPercent + ' %'; meter('cpuM', sy.cpuPercent); $('cpuInfo').textContent = `${sy.cores} Kerne · ${sy.cpu || ''}`;
+  const used = sy.memTotal - sy.memFree, memPct = Math.round(used / sy.memTotal * 100);
+  $('mem').textContent = memPct + ' %'; meter('memM', memPct); $('memInfo').textContent = `${fmtBytes(used)} von ${fmtBytes(sy.memTotal)} · Website ${fmtBytes(sv.memory)}`;
+  if (sy.disk) { const du = sy.disk.total - sy.disk.free, dp = Math.round(du / sy.disk.total * 100); $('disk').textContent = dp + ' %'; meter('diskM', dp); $('diskInfo').textContent = `${fmtBytes(sy.disk.free)} frei von ${fmtBytes(sy.disk.total)}`; }
+  else { $('disk').textContent = '–'; $('diskInfo').textContent = 'Nicht verfügbar'; }
+
+  const max = Math.max(1, ...tr.days.map(x => x.visitors));
+  $('chart').innerHTML = tr.days.length ? tr.days.map(x => `<div title="${x.day}: ${x.visitors} Besucher, ${x.requests} Anfragen"><i style="height:${Math.max(2, x.visitors / max * 100)}%"></i><span>${x.day.slice(8, 10)}.${x.day.slice(5, 7)}</span></div>`).join('') : '<p class="empty">Noch keine Daten</p>';
+  items('top', tr.top.map(([p, c]) => [p, n(c)]), 'Noch keine Aufrufe');
+
+  rows('server', [['Port', sv.port], ['Node.js', sv.node], ['Prozess-ID', sv.pid], ['Nächster Neustart', '02:00 Uhr'], ['IP-Adressen', sy.ips.join(', ') || '–']]);
+  rows('system', [['Rechnername', sy.hostname], ['Betriebssystem', sy.os], ['System läuft seit', fmtDur(sy.uptime)], ['Prozessor', `${sy.cores} × ${sy.cpu || '–'}`]]);
+  const st = tr.status, sum = (f) => Object.entries(st).filter(([k]) => f(+k)).reduce((a, [, v]) => a + v, 0);
+  rows('codes', [['Erfolgreich (2xx)', n(sum(c => c < 300))], ['Umgeleitet (3xx)', n(sum(c => c >= 300 && c < 400))], ['Nicht gefunden (404)', n(st[404])], ['Andere Fehler (4xx)', n(sum(c => c >= 400 && c < 500 && c !== 404))], ['Serverfehler (5xx)', n(sum(c => c >= 500))]]);
+
+  items('deploys', deploys.map(x => [fmtDate(x.at), `${n(x.files)} Dateien`]), 'Noch keine Veröffentlichung');
+  items('restarts', sv.restarts.map((x, i) => [fmtDate(x), i === 0 ? 'aktuell' : '']), '–');
+}
+refresh(); setInterval(refresh, 10000);
+
+// ---- upload ----
+const drop = $('drop'), pick = $('pick'), bar = $('bar'), status = $('status');
 const say = (t, cls = '') => { status.textContent = t; status.className = cls; };
 
-// Walk a dropped folder (DataTransfer entries) into [{ path, file }].
 async function walk(entry, prefix = '') {
   if (entry.isFile) return [{ path: prefix + entry.name, file: await new Promise((r, j) => entry.file(r, j)) }];
   const reader = entry.createReader(), out = [];
@@ -49,58 +179,56 @@ async function walk(entry, prefix = '') {
   }
   return out;
 }
-
 // If everything sits in one top folder (e.g. "dist/…") and index.html is not at the root, drop that folder name.
-function normalize(items) {
-  items = items.filter(i => !/(^|\/)(\.DS_Store|Thumbs\.db)$/.test(i.path));
-  while (!items.some(i => i.path === 'index.html')) {
-    const tops = new Set(items.map(i => i.path.split('/')[0]));
-    if (tops.size !== 1 || items.some(i => !i.path.includes('/'))) break;
-    items = items.map(i => ({ ...i, path: i.path.slice(i.path.indexOf('/') + 1) }));
+function normalize(list) {
+  list = list.filter(i => !/(^|\/)(\.DS_Store|Thumbs\.db)$/.test(i.path));
+  while (!list.some(i => i.path === 'index.html')) {
+    const tops = new Set(list.map(i => i.path.split('/')[0]));
+    if (tops.size !== 1 || list.some(i => !i.path.includes('/'))) break;
+    list = list.map(i => ({ ...i, path: i.path.slice(i.path.indexOf('/') + 1) }));
   }
-  return items;
+  return list;
 }
-
-async function upload(items) {
-  items = normalize(items);
-  if (!items.some(i => i.path === 'index.html')) return say('Keine index.html gefunden – bitte den Ordner „dist“ hochladen.', 'err');
+async function upload(list) {
+  list = normalize(list);
+  if (!list.some(i => i.path === 'index.html')) return say('Keine index.html gefunden – bitte den Ordner „dist“ hochladen.', 'err');
+  $('barWrap').hidden = false; bar.style.width = 0; say('');
+  $('dropText').textContent = 'Wird hochgeladen …';
   try {
-    say(`Starte Upload (${items.length} Dateien) …`);
     let r = await fetch('/admin/begin', { method: 'POST' });
     if (!r.ok) throw new Error('Start fehlgeschlagen');
     let done = 0, next = 0;
     const worker = async () => {
-      while (next < items.length) {
-        const it = items[next++];
+      while (next < list.length) {
+        const it = list[next++];
         const res = await fetch('/admin/file?path=' + encodeURIComponent(it.path), { method: 'PUT', body: it.file });
         if (!res.ok) throw new Error(`${it.path}: ${(await res.json().catch(() => ({}))).error || res.status}`);
-        done++; bar.style.width = (done / items.length * 100) + '%';
-        say(`${done} / ${items.length} Dateien hochgeladen …`);
+        done++; bar.style.width = (done / list.length * 100) + '%';
+        $('dropSub').textContent = `${done} von ${list.length} Dateien`;
       }
     };
     await Promise.all(Array.from({ length: 6 }, worker));
     r = await fetch('/admin/commit', { method: 'POST' });
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Veröffentlichen fehlgeschlagen');
-    say('Fertig – neue Version ist live. Alte Version wurde gelöscht.', 'ok');
-    status.insertAdjacentHTML('beforeend', ' <a href="/" target="_blank">Website öffnen</a>');
+    $('dropText').textContent = 'Veröffentlicht';
+    say('Neue Version ist live, die alte wurde gelöscht. ', 'ok');
+    status.insertAdjacentHTML('beforeend', '<a href="/" target="_blank" rel="noopener">Website öffnen →</a>');
+    refresh();
   } catch (e) {
-    say('Fehler: ' + e.message + ' – die bisherige Version bleibt unverändert online.', 'err');
+    $('dropText').textContent = 'Ordner hierher ziehen';
+    say('Fehler: ' + e.message + ' – die bisherige Version bleibt online.', 'err');
+  } finally {
+    $('dropSub').textContent = 'Die Ordnerstruktur wird übernommen';
   }
 }
-
 drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
 drop.addEventListener('dragleave', () => drop.classList.remove('over'));
 drop.addEventListener('drop', async e => {
-  e.preventDefault(); drop.classList.remove('over'); bar.style.width = 0;
+  e.preventDefault(); drop.classList.remove('over');
   const entries = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry()).filter(Boolean);
-  const items = (await Promise.all(entries.map(en => walk(en)))).flat();
-  upload(items);
+  upload((await Promise.all(entries.map(en => walk(en)))).flat());
 });
-pick.addEventListener('change', () => {
-  bar.style.width = 0;
-  upload([...pick.files].map(f => ({ path: f.webkitRelativePath || f.name, file: f })));
-  pick.value = '';
-});
+pick.addEventListener('change', () => { upload([...pick.files].map(f => ({ path: f.webkitRelativePath || f.name, file: f }))); pick.value = ''; });
 </script>
 </body>
 </html>
