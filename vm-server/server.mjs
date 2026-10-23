@@ -154,6 +154,7 @@ async function admin(req, res, url) {
         top: Object.entries(stats.paths).sort((x, y) => y[1] - x[1]).slice(0, 8) },
       deploys: stats.deploys,
       watch: watchState,
+      logBytes: (() => { try { return fs.statSync(path.join(ROOT, 'logs', 'server.log')).size; } catch { return 0; } })(),
     });
   }
   if (req.method === 'POST' && url.pathname === '/admin/begin') {
