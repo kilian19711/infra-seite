@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SITE = path.join(ROOT, 'site');
 const STAGING = path.join(ROOT, 'staging');
-const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
+// install.ps1 (PowerShell 5.1) writes UTF-8 with BOM, which JSON.parse rejects.
+const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8').replace(/^﻿/, ''));
 const PORT = Number(process.env.PORT || cfg.port || 80);
 const MAX_FILE = 50 * 1024 * 1024;
 const STARTED = new Date();
@@ -152,6 +153,7 @@ async function admin(req, res, url) {
         days: Object.entries(stats.days).sort().slice(-14).map(([day, v]) => ({ day, requests: v.requests, visitors: v.visitors, pages: v.pages })),
         top: Object.entries(stats.paths).sort((x, y) => y[1] - x[1]).slice(0, 8) },
       deploys: stats.deploys,
+      watch: watchState,
     });
   }
   if (req.method === 'POST' && url.pathname === '/admin/begin') {
@@ -172,20 +174,66 @@ async function admin(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/admin/commit') {
     // Refuse incomplete uploads so a half-finished upload never replaces a working site.
     if (!fs.existsSync(path.join(STAGING, 'index.html'))) return json(400, { error: 'index.html fehlt – falscher Ordner?' });
-    const old = SITE + '_old';
-    fs.rmSync(old, { recursive: true, force: true });
-    if (fs.existsSync(SITE)) fs.renameSync(SITE, old);
-    fs.renameSync(STAGING, SITE);
-    fs.rmSync(old, { recursive: true, force: true });
-    const info = { at: new Date().toISOString(), files: 0, from: req.socket.remoteAddress };
-    const count = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => e.isDirectory() ? count(path.join(d, e.name)) : info.files++);
-    count(SITE);
-    stats.deploys = [info, ...stats.deploys].slice(0, 20); saveStats();
-    console.log(info.at, 'neue Version veröffentlicht');
+    publish(`Upload von ${req.socket.remoteAddress}`);
     return json(200, { ok: true });
   }
   json(404, { error: 'unbekannt' });
 }
+
+/** Swap ./staging in as the live site, delete the old version, log it. */
+function publish(source) {
+  const old = SITE + '_old';
+  fs.rmSync(old, { recursive: true, force: true });
+  if (fs.existsSync(SITE)) fs.renameSync(SITE, old);
+  fs.renameSync(STAGING, SITE);
+  fs.rmSync(old, { recursive: true, force: true });
+  const info = { at: new Date().toISOString(), files: 0, source };
+  const count = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => e.isDirectory() ? count(path.join(d, e.name)) : info.files++);
+  count(SITE);
+  stats.deploys = [info, ...stats.deploys].slice(0, 20); saveStats();
+  console.log(info.at, 'neue Version veröffentlicht –', source);
+}
+
+/* Watch folder (config.watchDir): drop a build there (its files, or a "dist" folder) and it goes live automatically
+   once nothing has changed for one check (10 s) – so a copy in progress is never published half-done. */
+const WATCH = cfg.watchDir ? path.resolve(cfg.watchDir) : null;
+// Its contents are deleted after publishing – so it must be a dedicated folder, never the server folder or a parent of it.
+if (WATCH && (ROOT === WATCH || ROOT.startsWith(WATCH + path.sep) || [SITE, STAGING].some(d => WATCH === d || WATCH.startsWith(d + path.sep)))) {
+  throw new Error(`watchDir ${WATCH} darf nicht der Server-Ordner oder ein übergeordneter Ordner sein.`);
+}
+const watchState = { dir: WATCH, last: null, message: WATCH ? 'Wartet auf neue Version' : 'Nicht eingerichtet' };
+let lastSig = null;
+function buildRoot(dir) {
+  if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
+  const subs = fs.readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory());
+  return subs.length === 1 && fs.existsSync(path.join(dir, subs[0].name, 'index.html')) ? path.join(dir, subs[0].name) : null;
+}
+function signature(dir) {
+  let n = 0, size = 0, mt = 0;
+  const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) return walk(p);
+    const st = fs.statSync(p); n++; size += st.size; mt = Math.max(mt, st.mtimeMs);
+  });
+  walk(dir);
+  return `${n}:${size}:${mt}`;
+}
+function checkWatch() {
+  try {
+    if (!WATCH) return;
+    fs.mkdirSync(WATCH, { recursive: true });
+    const root = buildRoot(WATCH);
+    if (!root) { lastSig = null; if (fs.readdirSync(WATCH).length) watchState.message = 'Ordner enthält keine index.html – wird ignoriert'; return; }
+    const sig = signature(WATCH);
+    if (sig !== lastSig) { lastSig = sig; watchState.message = 'Neue Version erkannt – warte, bis das Kopieren fertig ist …'; return; }
+    fs.rmSync(STAGING, { recursive: true, force: true });
+    fs.cpSync(root, STAGING, { recursive: true });
+    publish(`Ordner ${WATCH}`);
+    for (const e of fs.readdirSync(WATCH)) fs.rmSync(path.join(WATCH, e), { recursive: true, force: true });
+    lastSig = null; watchState.last = new Date().toISOString(); watchState.message = 'Veröffentlicht – wartet auf neue Version';
+  } catch (e) { watchState.message = 'Fehler: ' + e.message; console.error(e); }
+}
+setInterval(checkWatch, 10_000).unref();
 
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');

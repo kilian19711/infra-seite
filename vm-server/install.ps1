@@ -1,7 +1,7 @@
-# Einmalige Einrichtung auf der VM. PowerShell als Administrator, im Ordner dieses Skripts:
+﻿# Einmalige Einrichtung auf der VM. PowerShell als Administrator, im Ordner dieses Skripts:
 #   powershell -ExecutionPolicy Bypass -File .\install.ps1
 # Aendert am System nur: 1 Firewall-Regel (eingehend, nur dieser Port) + 2 geplante Aufgaben (Start beim Booten, Neustart 2:00).
-param([int]$Port = 80)
+param([int]$Port = 80, [string]$WatchDir = (Join-Path $PSScriptRoot 'upload'))
 $ErrorActionPreference = 'Stop'
 $Dir = $PSScriptRoot
 
@@ -18,7 +18,8 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $sec = Read-Host 'Passwort fuer die Upload-Seite /admin festlegen' -AsSecureString
 $pw = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
 if ($pw.Length -lt 8) { throw 'Bitte mindestens 8 Zeichen.' }
-@{ port = $Port; password = $pw } | ConvertTo-Json | Set-Content -Path (Join-Path $Dir 'config.json') -Encoding UTF8
+New-Item -ItemType Directory -Force $WatchDir | Out-Null
+@{ port = $Port; password = $pw; watchDir = $WatchDir } | ConvertTo-Json | Set-Content -Path (Join-Path $Dir 'config.json') -Encoding UTF8
 
 # Damit andere Rechner im Netz die Seite erreichen: genau eine eingehende Regel fuer diesen Port.
 Get-NetFirewallRule -DisplayName 'Infra-Website' -ErrorAction SilentlyContinue | Remove-NetFirewallRule
@@ -30,7 +31,7 @@ $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) 
 Register-ScheduledTask -TaskName 'Infra-Website' -Force -Principal $user -Settings $settings `
   -Trigger (New-ScheduledTaskTrigger -AtStartup) `
   -Action (New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$Dir\run.cmd`"" -WorkingDirectory $Dir) | Out-Null
-# 2:00 – Node beenden; run.cmd startet ihn nach 5 s automatisch neu.
+# 2:00 - Node beenden; run.cmd startet ihn nach 5 s automatisch neu.
 $restart = "if (Test-Path '$Dir\server.pid') { Stop-Process -Id (Get-Content '$Dir\server.pid') -Force -ErrorAction SilentlyContinue }"
 Register-ScheduledTask -TaskName 'Infra-Website Neustart 2 Uhr' -Force -Principal $user `
   -Trigger (New-ScheduledTaskTrigger -Daily -At '02:00') `
@@ -42,3 +43,5 @@ $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notli
 $suffix = if ($Port -eq 80) { '' } else { ":$Port" }
 Write-Host "Fertig. Website:  http://$ip$suffix/" -ForegroundColor Green
 Write-Host "Upload-Seite:     http://$ip$suffix/admin" -ForegroundColor Green
+Write-Host "Upload-Ordner:    $WatchDir  (Build hineinkopieren = automatisch live)" -ForegroundColor Green
+
